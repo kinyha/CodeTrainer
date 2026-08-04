@@ -753,13 +753,18 @@ kotlin L2, SQL L2, Spring MVC/JPA L3, Kafka consumer L3. Цель фазы — �
 `streams.l2.AvgSalaryByDepartment`, `kotlinlang.l2.SealedResult`,
 `sql.l2.GroupByHavingOrders`, `springweb.l3.ExceptionHandlerProblemDetail`,
 `kafka.l3.ManualAckListener`. Быстрые тесты, MockMvc и Embedded Kafka зелёные;
-PostgreSQL Testcontainers-тест компилируется, но локальный прогон требует
-запущенного Docker daemon.
+PostgreSQL Testcontainers-тест зелёный на Docker Desktop с образом
+`postgres:17.6-alpine`.
 
-**Фаза 2 — первая полезная библиотека (2–3 недели), ~30 задач.**
+**Фаза 2 — первая полезная библиотека (готово 2026-08-04), 30 новых задач.**
 5 collections/algorithms, 5 streams, 5 kotlin, 3 concurrency/coroutines,
 4 SQL, 4 Spring, 2 Kafka, 2 бизнес-сценария. Плюс генератор `.gittypeignore`
 (селекторы по уровню и тегам) и `bin/trainer index`.
+
+Итого в каталоге 36 упражнений. SQL-задачи имеют быстрый contract-тест и
+семантический PostgreSQL Testcontainers-тест; обе новые Kafka-задачи проверены
+на Embedded Kafka. Составные селекторы доступны по темам, уровням, тегам и языку,
+а `TRAINER_DRY_RUN=1` позволяет проверить плейлист без запуска TUI.
 
 **Фаза 3 — workflow (1 неделя).**
 `bin/trainer stats` на sqlite, `progress/schedule.tsv`, `bin/train due`.
