@@ -16,8 +16,9 @@ gittype не умеет настраивать размер куска — ур�
 
 В самом gittype бери Zen или Wild: файл зеркала и есть одно решение целиком.
 
+Зеркало лежит в ~/.local/share/trainer-drill (переопределяется TRAINER_DRILL_DIR).
 Обратное сопоставление с задачей однозначное:
-    build/drill/<topic>/<level>/<Name>.java  ->  <topic>.<level>.<Name>
+    <topic>/<level>/<Name>.java  ->  <topic>.<level>.<Name>
 """
 
 from __future__ import annotations
@@ -31,7 +32,12 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-MIRROR = ROOT / "build" / "drill"
+
+# Зеркало лежит ВНЕ репозитория намеренно: gittype игнорирует build-каталоги.
+# В ~/.cache его тоже класть нельзя: встроенное правило `**/.cache/**` скроет все файлы.
+MIRROR = Path(
+    os.environ.get("TRAINER_DRILL_DIR", Path.home() / ".local" / "share" / "trainer-drill")
+)
 
 SOURCE_DIRS = [
     ROOT / "core-drills" / "src" / "main",
@@ -164,6 +170,10 @@ def collect(topics: set[str], levels: set[str], lang: str | None) -> list[Task]:
     return tasks
 
 
+def git(*args: str) -> None:
+    subprocess.run(["git", *args], cwd=MIRROR, check=True, capture_output=True)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(add_help=True, description="Drill только по телу решения")
     parser.add_argument("selector", nargs="*", help="<topic> [lN] или просто lN")
@@ -211,14 +221,13 @@ def main() -> int:
             print(f"  {rel}  ({len(path.read_text(encoding='utf-8').splitlines())} строк)")
         return 0
 
-    # gittype ожидает git-репозиторий
-    subprocess.run(["git", "init", "-q"], cwd=MIRROR, check=True)
-    subprocess.run(["git", "add", "-A"], cwd=MIRROR, check=True)
-    subprocess.run(
-        ["git", "-c", "user.email=focus@trainer", "-c", "user.name=focus", "commit", "-qm", "focus"],
-        cwd=MIRROR,
-        check=True,
-    )
+    # gittype требует git-репозиторий, причём с origin: он разбирает remote URL,
+    # чтобы определить владельца и имя репозитория. Без remote извлечение падает
+    # с "Failed to extract code chunks: Git repository not found".
+    git("init", "-q")
+    git("remote", "add", "origin", "https://github.com/local/trainer-drill.git")
+    git("add", "-A")
+    git("-c", "user.email=focus@trainer", "-c", "user.name=focus", "commit", "-qm", "focus")
 
     if not shutil.which("gittype"):
         print("gittype не установлен", file=sys.stderr)
