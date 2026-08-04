@@ -1,0 +1,230 @@
+#!/usr/bin/env python3
+"""Focused drill mode: набирать только решение, без обвязки.
+
+gittype не умеет настраивать размер куска — уровни Easy..Zen зашиты в бинарник,
+конфига нет. Поэтому вместо настройки gittype мы даём ему на вход зеркало,
+в котором нет ничего, кроме тела решения и его сигнатуры: ни package, ни
+импортов, ни приватного конструктора, ни guard-проверок.
+
+Зеркало не обязано компилироваться — gittype только парсит tree-sitter'ом.
+
+    bin/focus streams l2          тема + уровень
+    bin/focus streams             вся тема
+    bin/focus l3                  уровень поперёк тем
+    bin/focus --lang kotlin       только Kotlin
+    bin/focus --dry-run streams   показать, что получится, и не запускать TUI
+
+В самом gittype бери Zen или Wild: файл зеркала и есть одно решение целиком.
+
+Обратное сопоставление с задачей однозначное:
+    build/drill/<topic>/<level>/<Name>.java  ->  <topic>.<level>.<Name>
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+MIRROR = ROOT / "build" / "drill"
+
+SOURCE_DIRS = [
+    ROOT / "core-drills" / "src" / "main",
+    ROOT / "spring-drills" / "src" / "main",
+    ROOT / "integration-drills" / "src" / "main",
+]
+
+BEGIN = "---8<--- solution"
+END = "--->8--- solution"
+
+DECL_JAVA = re.compile(r"^\s*(public|protected|private|static|abstract|final|default)\s")
+DECL_KOTLIN = re.compile(r"^\s*(?:(?:private|internal|public|protected)\s+)?(?:suspend\s+)?fun\b")
+TYPE_DECL = re.compile(r"^\s*(?:public\s+)?(?:final\s+)?(?:class|interface|enum|record|object)\s+(\w+)")
+GUARD = re.compile(r"^\s*(Objects\.requireNonNull|require\(|requireNotNull\()")
+COMMENT_LINE = re.compile(r"^\s*(/\*|\*|//)")
+
+
+class Task:
+    def __init__(self, path: Path):
+        self.path = path
+        self.kotlin = path.suffix == ".kt"
+        self.lines = path.read_text(encoding="utf-8").splitlines()
+        self.topic, self.level = self._topic_level()
+        self.type_name = self._type_name()
+
+    def _topic_level(self) -> tuple[str, str]:
+        parts = self.path.parts
+        # .../trainer/<topic>/<lN>/<Name>.java, тема может быть вложенной
+        level = self.path.parent.name
+        topic = self.path.parent.parent.name
+        return topic, level
+
+    def _type_name(self) -> str:
+        for line in self.lines:
+            m = TYPE_DECL.match(line)
+            if m:
+                return m.group(1)
+        return self.path.stem
+
+    @property
+    def task_id(self) -> str:
+        return f"{self.topic}.{self.level}.{self.path.stem}"
+
+    def blocks(self) -> list[tuple[list[str], list[str], list[str]]]:
+        """[(doc, signature, body)] для каждого блока между маркерами."""
+        found = []
+        for i, line in enumerate(self.lines):
+            if BEGIN not in line:
+                continue
+            end = next((j for j in range(i + 1, len(self.lines)) if END in self.lines[j]), None)
+            if end is None:
+                continue
+            body = self.lines[i + 1 : end]
+            sig = self._signature_above(i)
+            doc = self._doc_above(sig[0]) if sig else ([], [])
+            if sig:
+                found.append((doc, sig[1], body))
+        return found
+
+    def _signature_above(self, marker: int) -> tuple[int, list[str]] | None:
+        """Сигнатура метода над маркером; пропускает пустые строки и guard-проверки."""
+        i = marker - 1
+        while i >= 0 and (not self.lines[i].strip() or GUARD.match(self.lines[i])):
+            i -= 1
+        if i < 0 or not self.lines[i].rstrip().endswith("{"):
+            return None
+        decl = DECL_KOTLIN if self.kotlin else DECL_JAVA
+        start = i
+        while start > 0 and not decl.match(self.lines[start]):
+            start -= 1
+        return start, self.lines[start : i + 1]
+
+    def _doc_above(self, sig_start: int) -> list[str]:
+        i = sig_start - 1
+        block: list[str] = []
+        while i >= 0 and COMMENT_LINE.match(self.lines[i]) and "@task" not in self.lines[i]:
+            block.insert(0, self.lines[i])
+            i -= 1
+        return block
+
+
+def dedent(lines: list[str], amount: int) -> list[str]:
+    out = []
+    for line in lines:
+        out.append(line[amount:] if line[:amount].strip() == "" else line.lstrip())
+    return out
+
+
+def render(task: Task) -> str | None:
+    blocks = task.blocks()
+    if not blocks:
+        return None
+
+    out: list[str] = []
+    if task.kotlin:
+        # Kotlin допускает функции верхнего уровня — обёртка не нужна.
+        for doc, sig, body in blocks:
+            indent = len(sig[0]) - len(sig[0].lstrip())
+            out += dedent(doc, indent) + dedent(sig, indent) + dedent(body, indent) + ["}", ""]
+    else:
+        out.append(f"class {task.type_name} {{")
+        for doc, sig, body in blocks:
+            out.append("")
+            out += doc + sig + body + ["    }"]
+        out.append("}")
+    return "\n".join(out).rstrip() + "\n"
+
+
+def collect(topics: set[str], levels: set[str], lang: str | None) -> list[Task]:
+    tasks = []
+    for base in SOURCE_DIRS:
+        if not base.exists():
+            continue
+        for path in sorted(base.rglob("*")):
+            if path.suffix not in (".java", ".kt"):
+                continue
+            if lang == "java" and path.suffix != ".java":
+                continue
+            if lang == "kotlin" and path.suffix != ".kt":
+                continue
+            text = path.read_text(encoding="utf-8")
+            if "// @task " not in text or BEGIN not in text:
+                continue
+            task = Task(path)
+            if topics and task.topic not in topics:
+                continue
+            if levels and task.level not in levels:
+                continue
+            tasks.append(task)
+    return tasks
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(add_help=True, description="Drill только по телу решения")
+    parser.add_argument("selector", nargs="*", help="<topic> [lN] или просто lN")
+    parser.add_argument("--lang", choices=["java", "kotlin"])
+    parser.add_argument("--dry-run", action="store_true", help="показать плейлист и выйти")
+    args = parser.parse_args()
+
+    topics: set[str] = set()
+    levels: set[str] = set()
+    for token in args.selector:
+        (levels if re.fullmatch(r"l[1-5]", token) else topics).add(token)
+
+    tasks = collect(topics, levels, args.lang)
+    if not tasks:
+        print("Под селектор ничего не подошло", file=sys.stderr)
+        return 1
+
+    if MIRROR.exists():
+        shutil.rmtree(MIRROR)
+
+    written = 0
+    skipped: list[str] = []
+    for task in tasks:
+        content = render(task)
+        if content is None:
+            skipped.append(task.task_id)
+            continue
+        target = MIRROR / task.topic / task.level / task.path.name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+        written += 1
+
+    if not written:
+        print("Не удалось извлечь ни одного решения", file=sys.stderr)
+        return 1
+
+    langs = args.lang or "java,kotlin"
+    print(f"Focus-плейлист: {written} задач ({langs})")
+    if skipped:
+        print(f"Пропущены (не нашлась сигнатура): {', '.join(skipped)}", file=sys.stderr)
+
+    if args.dry_run:
+        for path in sorted(MIRROR.rglob("*.*")):
+            rel = path.relative_to(MIRROR)
+            print(f"  {rel}  ({len(path.read_text(encoding='utf-8').splitlines())} строк)")
+        return 0
+
+    # gittype ожидает git-репозиторий
+    subprocess.run(["git", "init", "-q"], cwd=MIRROR, check=True)
+    subprocess.run(["git", "add", "-A"], cwd=MIRROR, check=True)
+    subprocess.run(
+        ["git", "-c", "user.email=focus@trainer", "-c", "user.name=focus", "commit", "-qm", "focus"],
+        cwd=MIRROR,
+        check=True,
+    )
+
+    if not shutil.which("gittype"):
+        print("gittype не установлен", file=sys.stderr)
+        return 127
+    os.execvp("gittype", ["gittype", str(MIRROR), "--langs", langs])
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
