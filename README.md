@@ -1,206 +1,352 @@
-# Trainer
+# CodeTrainer — как пользоваться
 
-Персональный тренажёр Java/Kotlin backend-навыков. Одна и та же задача работает в
-двух режимах: набрать эталон пальцами в gittype и написать её с нуля под тесты.
+Это мой локальный тренажёр Java/Kotlin backend. Задачи можно проходить
+тремя способами:
 
-Замысел, формат задач и roadmap — в [DESIGN.md](DESIGN.md). Этот файл — про то,
-как этим пользоваться.
+| Что хочу сделать | Команда |
+|---|---|
+| Набрать только сигнатуру и тело решения | `bin/focus streams` |
+| Потренировать задачу в полном исходнике | `bin/train streams` |
+| Написать решение с нуля и прогнать тесты | `bin/trainer new streams.l2.AvgSalaryByDepartment` |
 
----
+Полный список всех 45 задач с ID, тегами, исходниками и разборами:
+[docs/CATALOG.md](docs/CATALOG.md).
 
-## Что нужно установить
+## Быстрый старт
 
-| Что | Зачем | Проверка |
-|---|---|---|
-| JDK 21 | сборка | `java -version` |
-| [gittype](https://github.com/unhappychoice/gittype) | режим набора | `gittype --version` |
-| Python 3 | CLI `bin/train` и `bin/trainer` | `python3 --version` |
-| Docker | только тесты с тегом `integration` | `docker ps` |
-
-Gradle ставить не нужно — в репозитории есть wrapper.
-
----
-
-## Что уже можно делать
-
-В каталоге 45 готовых задач: 6 упражнений вертикального среза, 30 упражнений
-первой библиотеки и 9 сценариев L4/L5. Есть algorithms/collections, streams,
-Kotlin, concurrency, бизнес-сценарии, SQL на PostgreSQL, Spring и Kafka. Полный
-список с тегами, исходниками и разборами — в [docs/CATALOG.md](docs/CATALOG.md).
-
----
-
-## Режим 1 — набор (drill)
+Все команды ниже вызываются из корня репозитория:
 
 ```bash
-bin/train streams l2                        # тема + уровень
-bin/train streams                           # вся тема
-bin/train l3                                # уровень поперёк всех тем
-bin/train --topics kafka,springdata --levels 2,3
-bin/train --tags groupingBy,tx --lang java  # по тегам из шапки задачи
-bin/train due --limit 15                    # подошедшие повторения
-bin/train --fresh streams                   # то же, но сбросив кэш gittype
+cd /path/to/CodeTrainer
 ```
 
-Скрипт находит нужный каталог и отдаёт его gittype. Дальше в TUI выбираешь режим:
-**Easy/Normal** для разгона на L1–L2, **Hard/Wild** для L4–L5, **Zen** — без
-таймера и рангов, когда разбираешь новое.
+Для обычных задач нужны JDK 21 и Python 3. Для режимов `focus` и `train`
+дополнительно нужен [gittype](https://github.com/unhappychoice/gittype).
+Docker нужен только для PostgreSQL integration-тестов.
 
-Что важно знать: **комментарии набирать не нужно**, gittype их пропускает. Поэтому
-пояснения в задачах написаны по-русски прямо на строках кода — читаешь их бесплатно,
-пока набираешь остальное.
+```bash
+java -version
+python3 --version
+gittype --version
+docker info             # нужен не каждый день
+```
 
-Темы выводятся из `@task`-метаданных. Простой селектор темы запускает gittype на
-каталоге напрямую; составной селектор генерирует `.gittypeignore` явными путями.
-`TRAINER_DRY_RUN=1 bin/train ...` показывает плейлист, не открывая TUI.
+Gradle отдельно ставить не нужно: используется `./gradlew` из репозитория.
 
----
+Первая сессия:
 
-## Режим 2 — написать с нуля (recall)
+```bash
+bin/focus --dry-run streams l1  # посмотреть плейлист
+bin/focus streams l1            # запустить gittype
+```
+
+В меню gittype для `focus` удобнее выбирать **Zen** или **Wild**: так решение
+не режется на слишком мелкие куски.
+
+## Как выбирать задачи
+
+У каждой задачи есть ID:
+
+```text
+streams.l2.AvgSalaryByDepartment
+└─тема─┘ └уровень┘ └──────имя задачи─────┘
+```
+
+ID нужен для `bin/trainer new` и `bin/trainer diff`. Для `focus` и `train`
+можно выбирать целую тему или уровень.
+
+Шкала уровней:
+
+| Уровень | Что он означает | Обычное время |
+|---|---|---:|
+| L1 | Базовый рефлекс, один приём | 5–10 мин |
+| L2 | Идиома API, несколько шагов | 10–25 мин |
+| L3 | Композиция приёмов | 25–45 мин |
+| L4 | Корректность, транзакции, edge cases | 45–90 мин |
+| L5 | Сценарий из нескольких классов/компонентов | 60+ мин |
+
+L1–L5 в пути задачи и Easy/Normal/Hard/Zen/Wild в gittype — это разные вещи.
+Первое описывает сложность самой задачи, второе — режим набора.
+
+## Где лежат задачи
+
+| Каталог | Что там | Сколько |
+|---|---|---:|
+| `core-drills/src/main/java/trainer/` | Algorithms, Collections, Streams, Concurrency, Patterns | 20 |
+| `core-drills/src/main/kotlin/trainer/kotlinlang/` | Kotlin language | 6 |
+| `spring-drills/src/main/java/trainer/` | Spring Core, Data, Web | 7 |
+| `integration-drills/src/main/java/trainer/` | SQL/PostgreSQL и Kafka | 12 |
+| `*/src/test/...` | Тесты в том же пакете | — |
+| `docs/CATALOG.md` | Кликабельный каталог всех задач | 45 |
+
+Внутри каталога путь всегда имеет вид:
+
+```text
+<module>/src/main/<java|kotlin>/trainer/<topic>/l<level>/<Task>.<java|kt>
+```
+
+Например:
+
+```text
+core-drills/src/main/java/trainer/streams/l2/AvgSalaryByDepartment.java
+core-drills/src/test/java/trainer/streams/l2/AvgSalaryByDepartmentTest.java
+core-drills/src/main/java/trainer/streams/l2/AvgSalaryByDepartment.md
+```
+
+`.md` рядом с исходником — это разбор решения. Он есть не у каждой задачи;
+ссылки на все имеющиеся разборы есть в каталоге.
+
+### Темы, которые уже есть
+
+| Тема-селектор | Уровни | Задач | Что внутри |
+|---|---|---:|---|
+| `algorithms` | L1–L2 | 2 | Строки, two pointers, hash map |
+| `collections` | L1–L3 | 4 | List, Map, Comparator, `computeIfAbsent` |
+| `streams` | L1–L3 | 6 | filter/map, collectors, grouping, `flatMap` |
+| `kotlinlang` | L1–L3 | 6 | Null safety, sequences, sealed, reified |
+| `concurrency` | L2–L5 | 5 | Atomic, futures, wait/notify, backpressure, rate limiter |
+| `patterns` | L3–L4 | 3 | Business rules, idempotency, transfer invariants |
+| `springcore` | L2 | 1 | Constructor injection, service boundary |
+| `springdata` | L3–L5 | 3 | Transactions, N+1, transactional outbox |
+| `springweb` | L2–L3 | 3 | ResponseEntity, validation, ProblemDetail |
+| `kafka` | L2–L4 | 4 | Keys, manual ack, tombstone, retry/DLT |
+| `sql` | L1–L5 | 8 | JOIN/GROUP BY, window/CTE, locking, idempotency |
+
+## Режим `focus`: набирать только решение
+
+Это основной режим для короткой механической практики. `bin/focus` извлекает
+сигнатуру и тело эталонного решения. Package, imports, конструкторы и прочая
+обвязка в тренировочный файл не попадают.
+
+```bash
+bin/focus streams                 # все 6 streams-задач
+bin/focus streams l2              # только streams L2
+bin/focus l3                      # все L3 из всех тем
+bin/focus --lang kotlin l2        # все Kotlin L2
+bin/focus --dry-run streams l2    # показать файлы, не запускать TUI
+```
+
+Перед каждым запуском скрипт заново создаёт зеркало в:
+
+```text
+~/.local/share/trainer-drill
+```
+
+Этот каталог не нужно редактировать: он временный. Путь можно переопределить
+через `TRAINER_DRILL_DIR`, но не стоит класть его в каталог с именем `.cache`, `cache`
+или `build`: gittype игнорирует такие пути.
+
+Важно: сессии `focus` идут из отдельного зеркала и пока не попадают в
+`bin/trainer stats` и расписание `due`. Для учёта прогресса используй `bin/train`.
+
+## Режим `train`: задача в полном исходнике
+
+`bin/train` передаёт gittype реальные файлы из репозитория. Используй этот режим,
+когда нужен контекст класса или когда хочешь, чтобы проход учитывался в статистике.
+
+```bash
+bin/train streams                         # вся тема
+bin/train streams l2                      # тема + уровень
+bin/train l3                              # весь L3
+bin/train --topics kafka,springdata       # несколько тем
+bin/train --topics kafka,sql --levels 2,3 # темы + уровни
+bin/train --tags groupingBy,transactional # хотя бы один из тегов
+bin/train --lang kotlin --levels 1,2      # только Kotlin
+bin/train due --limit 15                  # очередь повторений
+bin/train --fresh streams                 # очистить cache челленджей gittype
+```
+
+Чтобы только увидеть итоговый плейлист:
+
+```bash
+TRAINER_DRY_RUN=1 bin/train --topics streams,collections --levels 2,3
+```
+
+При сложном фильтре `bin/train` временно генерирует `.gittypeignore` в корне.
+Файл не нужно редактировать или коммитить.
+
+## Режим `recall`: написать с нуля
+
+Выбери ID в [каталоге](docs/CATALOG.md) и создай заготовку:
 
 ```bash
 bin/trainer new streams.l2.AvgSalaryByDepartment
 ```
 
-В `arena/` появятся заготовка и её тест. В заготовке сохранены сигнатура,
-метаданные и Javadoc с контрактом, а тело метода вырезано вместе с подсказками.
+Команда скопирует задачу и её тест в `arena/src/`, а эталонное тело решения
+заменит на `TODO`. Открой созданный файл в IDE и пиши решение.
+
+Полный цикл:
 
 ```bash
-./gradlew :arena:test                                   # должно падать, пока не написал
-# ... пишешь реализацию в arena/src/main/... ...
-./gradlew :arena:test                                   # зелено?
-bin/trainer diff streams.l2.AvgSalaryByDepartment       # сравнить с эталоном
-bin/trainer clean                                       # убрать за собой
-```
-
-`arena` — черновик: её содержимое не коммитится и перегенерируется в любой момент.
-Незаконченная задача там не ломает сборку остальных модулей.
-
----
-
-## С чего начинать: два пути
-
-Оба рабочие, выбор зависит от того, знаешь ли ты тему.
-
-**Тема новая или подзабытая — начинай с drill.** Набираешь готовое решение и
-читаешь пояснения прямо на строках; заодно видишь, что в теме вообще есть.
-Разобранный пример на входе работает лучше, чем сидение над пустым методом.
-
-```bash
-bin/train streams l1         # просто набираешь и читаешь
-bin/train streams l2         # когда l1 стал скучным
-```
-
-Дальше, когда рука пошла, бери ту же задачу в recall — уже понимая, что пишешь:
-
-```bash
-bin/trainer new streams.l1.ActiveCustomerNames
+bin/trainer new streams.l2.AvgSalaryByDepartment
 ./gradlew :arena:test
+
+# редактирую arena/src/main/java/trainer/streams/l2/AvgSalaryByDepartment.java
+
+./gradlew :arena:test
+bin/trainer diff streams.l2.AvgSalaryByDepartment
+bin/trainer clean
 ```
 
-**Тему знаешь — начинай с recall.** Сначала пиши сам, смотри, где встал, потом
-`diff` с эталоном и разбор, и только потом drill, чтобы правильная форма осела в
-пальцах. Так пробелы вскрываются сразу, а не маскируются узнаванием.
+`diff` показывает разницу между текущим кодом в `arena` и эталоном. `clean`
+удаляет все сгенерированные исходники из `arena/src/`. Они игнорируются Git и не ломают
+остальную сборку.
 
-Чего делать не стоит: гонять drill по задаче, смысл которой не понял. Это
-надёжный способ выучить символы вместо смысла. Если после пары проходов не ясно,
-почему решение такое, — открывай `<Task>.md` или иди в recall.
+Для SQL-задач и `springdata.l4.NPlusOneFetchJoin` тест в `arena` потребует
+запущенный Docker.
 
----
+## Как читать исходник задачи
 
-## Как устроена задача
+В начале файла лежат метаданные:
 
 ```java
-// @task streams.l2.AvgSalaryByDepartment      ← ID = путь пакета без trainer.
-// @tags groupingBy,averagingDouble,TreeMap    ← по ним потом будет отбор сессий
+// @task streams.l2.AvgSalaryByDepartment
+// @tags groupingBy,averagingDouble,TreeMap
 // @time 15m
-// @src  LeetCode-75-Study-Project:...         ← откуда взята
-// @doc  AvgSalaryByDepartment.md              ← разбор рядом, если он есть
-
-/**
- * Что вернуть, контракт, критерий «готово».
- */
-public static Map<String, Double> calculate(List<Employee> employees) {
-    return employees.stream()
-            .collect(Collectors.groupingBy(
-                    Employee::department,
-                    TreeMap::new,                                // WHY: почему так, а не иначе
-                    Collectors.averagingDouble(Employee::salary) // EDGE: неочевидный случай
-            ));
-}
+// @doc AvgSalaryByDepartment.md
 ```
 
-Маркеры: `WHY:` — почему выбрано это решение, `EDGE:` — граничный случай,
-`COST:` — сложность или цена операции. Рядом может лежать `<Task>.md` с полным
-разбором, подводными камнями и вопросами-follow-up с собеседования; для L1–L2 он
-обычно не нужен.
+| Маркер | Что означает |
+|---|---|
+| `@task` | Точный ID задачи |
+| `@tags` | Ключевые техники для фильтра `bin/train --tags` |
+| `@time` | Ориентир на recall-попытку |
+| `@doc` | Разбор рядом с задачей |
 
-Уровень зашит в путь: `streams/l2/` — это L2. Шкала: **L1** рефлекс (5–10 мин),
-**L2** идиома API (10–25), **L3** композиция (25–45), **L4** корректность —
-ошибка не видна в happy path (45–90), **L5** сценарий из нескольких классов.
+В коде встречаются короткие пометки:
 
----
+- `WHY:` — почему выбран такой подход;
+- `EDGE:` — неочевидный граничный случай;
+- `COST:` — сложность или цена операции.
 
-## Модули и проверки
+gittype пропускает комментарии: их можно читать, но не нужно набирать.
 
-| Модуль | Что внутри | Тяжесть |
-|---|---|---|
-| `fixtures` | общие модели и детерминированные данные | — |
-| `core-drills` | Java/Kotlin без Spring и Docker | секунды |
-| `spring-drills` | Spring Core, MVC, Data | средне |
-| `integration-drills` | PostgreSQL и Kafka | тесты с тегом — только по требованию |
-| `arena` | черновик recall-режима | — |
+## Как запускать тесты
 
-Модуль здесь — граница зависимостей, а не тема. Поэтому упражнение на `groupingBy`
-не тянет за собой Spring и Docker, и ежедневный прогон занимает секунды.
+Быстрые проверки без Docker:
 
 ```bash
-./gradlew :core-drills:test                     # ежедневный цикл
-./gradlew build                                 # всё, кроме integration и slow
-./gradlew :integration-drills:integrationTest   # PostgreSQL, нужен Docker
-./gradlew :spring-drills:integrationTest        # JPA/N+1, нужен Docker
-./gradlew test --tests '*Streams*'              # точечно
+./gradlew :core-drills:test
+./gradlew :spring-drills:test
+./gradlew :integration-drills:test
+./gradlew build
 ```
 
-Обычная сборка **не** требует Docker: тесты с тегами `integration` и `slow`
-исключены по умолчанию. Отдельного флага для этого не нужно.
+`build` и обычные `test` исключают тесты с тегами `integration` и `slow`.
+Kafka-тесты используют embedded Kafka и Docker не требуют.
 
-GitHub Actions запускает два job: быстрый build вместе с regression-тестом CLI,
-затем Docker-job со всеми PostgreSQL/Spring integration-тестами.
+Прогон одного теста:
 
----
+```bash
+./gradlew :core-drills:test \
+  --tests 'trainer.streams.l2.AvgSalaryByDepartmentTest'
+```
 
-## Добавить свою задачу
+PostgreSQL integration-тесты через Testcontainers:
 
-1. Выбери модуль по зависимостям и положи файл в `<module>/src/main/java/trainer/<тема>/l<N>/`.
-2. Шапка `@task/@tags/@time`, Javadoc с контрактом, пояснения `WHY/EDGE/COST`.
-3. Один файл — одна задача, 40–120 строк, класс `final`, методы `static`.
-4. Тест — в зеркальном пакете `src/test/...`, имя `<Класс>Test`.
-5. Проверь главное: **тест обязан падать на заготовке.** `bin/trainer new <id>` и
-   `./gradlew :arena:test` — если зелено сразу, тест ничего не проверяет.
-6. Выполни `bin/trainer index` и закоммить обновлённый каталог.
+```bash
+docker info
+./gradlew :integration-drills:integrationTest
+./gradlew :spring-drills:integrationTest
+```
 
----
+При первом запуске Testcontainers скачает PostgreSQL image, поэтому первый прогон
+будет дольше обычного.
 
 ## Прогресс и повторения
 
+gittype хранит результаты в `~/.gittype/gittype.db`. CodeTrainer читает оттуда проходы
+реальных файлов, запущенных через `bin/train`.
+
 ```bash
-bin/trainer stats                    # агрегаты по всем задачам
+bin/trainer stats
+bin/trainer stats --topic streams
 bin/trainer stats --topic streams --since 30d
-bin/trainer due --limit 15           # обновить schedule и показать очередь
-bin/train due --limit 15             # сразу открыть очередь в gittype
+
+bin/trainer due --limit 15
+bin/trainer due --limit 15 --ids
+bin/train due --limit 15
 ```
 
-Данные читаются из `~/.gittype/gittype.db`. Состояние SM-2-lite хранится в
-`progress/schedule.tsv`: сильный проход растит интервал, слабый возвращает задачу
-на завтра. `last_result_id` не даёт повторно применить уже учтённую попытку, а
-никогда не встречавшиеся задачи всегда считаются подошедшими.
+Расписание повторений хранится в `progress/schedule.tsv`. Если задача ни разу
+не проходилась, она считается готовой к повторению. Плохой проход возвращает
+её в очередь на завтра, уверенный проход увеличивает интервал.
 
-## Верх пирамиды
+## Готовые сценарии
 
-Базовая Фаза 4 готова: `SKIP LOCKED`, recursive CTE, exactly-once database
-effect, N+1 с Hibernate Statistics, Kafka retry/DLT, transactional outbox,
-token bucket, executor backpressure и code-review transfer invariants. Дальше
-L4/L5 пополняются по реальным пробелам, а не ради количества.
+### 15 минут: размять пальцы
 
-Порядок работ — в [DESIGN.md](DESIGN.md), §12.
+```bash
+bin/focus streams l1
+```
+
+### 30 минут: разобрать и повторить тему
+
+```bash
+bin/train collections l2
+bin/trainer new collections.l2.ComparatorChain
+./gradlew :arena:test
+```
+
+### 60+ минут: recall без подсказки
+
+```bash
+bin/trainer new patterns.l4.IdempotentPaymentService
+./gradlew :arena:test
+bin/trainer diff patterns.l4.IdempotentPaymentService
+bin/trainer clean
+```
+
+### Очередь повторений
+
+```bash
+bin/trainer due --limit 10
+bin/train due --limit 10
+```
+
+## Если что-то не работает
+
+### `bin/focus` не показывает файлы
+
+```bash
+bin/focus --dry-run streams
+find ~/.local/share/trainer-drill -type f
+```
+
+Не задавай `TRAINER_DRILL_DIR` внутри `.cache`, `cache` или `build`. Если переменная уже
+задана, на один запуск можно вернуть безопасный путь:
+
+```bash
+TRAINER_DRILL_DIR="$HOME/.local/share/trainer-drill" bin/focus streams
+```
+
+### gittype пишет `cursor position could not be read`
+
+Запускай `bin/focus` и `bin/train` в обычном интерактивном Terminal, а не в
+IDE Run/Output panel: TUI нужен настоящий TTY.
+
+### `Arena already contains ...`
+
+```bash
+bin/trainer clean
+bin/trainer new <task-id>
+```
+
+### Integration-тест не видит Docker
+
+```bash
+docker info
+./gradlew :integration-drills:integrationTest --info
+```
+
+## Служебные команды
+
+```bash
+bin/focus --help
+bin/train --help
+bin/trainer --help
+bin/trainer index       # пересобрать docs/CATALOG.md
+```
+
+Как устроен формат задач и как дальше развивать тренажёр, описано в [DESIGN.md](DESIGN.md).
