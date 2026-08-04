@@ -611,8 +611,8 @@ JUnit 5, AssertJ, Mockito — всё в `gradle/libs.versions.toml`, обнов�
 
 ## 9. Прогресс и повторения
 
-`bin/trainer stats` читает `~/.gittype/gittype.db` напрямую (быстрее и точнее,
-чем `gittype export`, но скрипт умеет оба источника на случай смены схемы):
+`bin/trainer stats` читает `~/.gittype/gittype.db` напрямую. Путь можно
+переопределить через `GITTYPE_DB`, что также используется regression-тестом CLI:
 
 ```sql
 SELECT c.file_path                                    AS task_file,
@@ -652,14 +652,16 @@ q == 1  → interval = 1, ease не растёт
 Состояние в `progress/schedule.tsv` — коммитится, человекочитаемо, мержится глазами:
 
 ```tsv
-task_id	ease	reps	interval_days	due	last_acc	last_wpm
-streams.l2.AvgSalaryByDepartment	2.50	4	11	2026-08-12	98.4	61.2
-concurrency.l4.BoundedBufferCondition	1.60	2	3	2026-08-05	93.1	44.0
+task_id	ease	reps	interval_days	due	last_acc	last_wpm	last_seen	last_result_id
+streams.l2.AvgSalaryByDepartment	2.50	4	11	2026-08-12	98.4	61.2	2026-08-01 12:00:00	81
+concurrency.l4.BoundedBufferCondition	1.60	2	3	2026-08-05	93.1	44.0	2026-08-02 09:00:00	87
 ```
 
 Задачи, ни разу не встречавшиеся, всегда попадают в `due` — каталог осваивается сам.
 
-Всё это — **Фаза 3**. Пока ежедневный workflow не устоялся, статистика не нужна.
+`last_result_id` делает обновление идемпотентным и позволяет последовательно
+применить несколько результатов, накопившихся между запусками. CLI и формула
+проверяются на изолированной SQLite fixture в `tests/tooling/progress-test.sh`.
 
 ---
 
@@ -766,9 +768,13 @@ PostgreSQL Testcontainers-тест зелёный на Docker Desktop с обр�
 на Embedded Kafka. Составные селекторы доступны по темам, уровням, тегам и языку,
 а `TRAINER_DRY_RUN=1` позволяет проверить плейлист без запуска TUI.
 
-**Фаза 3 — workflow (1 неделя).**
+**Фаза 3 — workflow (готово 2026-08-04).**
 `bin/trainer stats` на sqlite, `progress/schedule.tsv`, `bin/train due`.
 Повторение слабых тем вместо случайной выдачи.
+
+CLI сведён в `tools/trainer.py`; два публичных shell-wrapper и helper занимают
+менее 400 строк, сохраняя ограничение §8. Обновление schedule атомарно, повторный
+запуск идемпотентен, а несколько новых результатов применяются по порядку.
 
 **Фаза 4 — верх пирамиды (по мере надобности).**
 L4/L5: transaction isolation, idempotency, N+1, retry/DLT, outbox, exactly-once;

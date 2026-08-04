@@ -14,7 +14,7 @@
 |---|---|---|
 | JDK 21 | сборка | `java -version` |
 | [gittype](https://github.com/unhappychoice/gittype) | режим набора | `gittype --version` |
-| ripgrep (`rg`) | `bin/trainer` ищет задачи по ID | `rg --version` |
+| Python 3 | CLI `bin/train` и `bin/trainer` | `python3 --version` |
 | Docker | только тесты с тегом `integration` | `docker ps` |
 
 Gradle ставить не нужно — в репозитории есть wrapper.
@@ -38,6 +38,7 @@ bin/train streams                           # вся тема
 bin/train l3                                # уровень поперёк всех тем
 bin/train --topics kafka,springdata --levels 2,3
 bin/train --tags groupingBy,tx --lang java  # по тегам из шапки задачи
+bin/train due --limit 15                    # подошедшие повторения
 bin/train --fresh streams                   # то же, но сбросив кэш gittype
 ```
 
@@ -177,9 +178,23 @@ public static Map<String, Double> calculate(List<Employee> employees) {
 
 ---
 
+## Прогресс и повторения
+
+```bash
+bin/trainer stats                    # агрегаты по всем задачам
+bin/trainer stats --topic streams --since 30d
+bin/trainer due --limit 15           # обновить schedule и показать очередь
+bin/train due --limit 15             # сразу открыть очередь в gittype
+```
+
+Данные читаются из `~/.gittype/gittype.db`. Состояние SM-2-lite хранится в
+`progress/schedule.tsv`: сильный проход растит интервал, слабый возвращает задачу
+на завтра. `last_result_id` не даёт повторно применить уже учтённую попытку, а
+никогда не встречавшиеся задачи всегда считаются подошедшими.
+
 ## Следующий этап
 
-Фаза 3 добавит `bin/trainer stats`, человекочитаемый `progress/schedule.tsv` и
-`bin/train due` поверх базы gittype. До неё drill-плейлист выбирается явно.
+Фаза 4 добавит верх пирамиды: L4/L5-сценарии с транзакциями, idempotency,
+retry/DLT и outbox, а также CI для быстрых и Docker-проверок.
 
 Порядок работ — в [DESIGN.md](DESIGN.md), §12.
