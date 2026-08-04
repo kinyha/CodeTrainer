@@ -9,6 +9,7 @@ import java.util.Objects;
 // @tags kafka,compacted-topic,tombstone,null-payload
 // @time 25m
 // @src  new
+// @doc  TombstoneAwareListener.md
 public final class TombstoneAwareListener {
 
     public static final String TOPIC = "trainer.customers.compacted";

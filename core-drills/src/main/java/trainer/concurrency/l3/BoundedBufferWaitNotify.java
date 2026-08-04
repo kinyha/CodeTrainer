@@ -8,6 +8,7 @@ import java.util.Queue;
 // @tags concurrency,wait,notifyAll,bounded-buffer
 // @time 35m
 // @src  new
+// @doc  BoundedBufferWaitNotify.md
 public final class BoundedBufferWaitNotify<T> {
 
     private final Queue<T> queue = new ArrayDeque<>();

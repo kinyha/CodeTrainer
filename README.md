@@ -23,10 +23,10 @@ Gradle ставить не нужно — в репозитории есть wra
 
 ## Что уже можно делать
 
-В каталоге 36 готовых задач: 6 упражнений вертикального среза и 30 упражнений
-первой библиотеки. Есть algorithms/collections, streams, Kotlin, concurrency,
-бизнес-сценарии, SQL на PostgreSQL, Spring и Kafka. Полный список с тегами и
-ссылками на исходники — в [docs/CATALOG.md](docs/CATALOG.md).
+В каталоге 45 готовых задач: 6 упражнений вертикального среза, 30 упражнений
+первой библиотеки и 9 сценариев L4/L5. Есть algorithms/collections, streams,
+Kotlin, concurrency, бизнес-сценарии, SQL на PostgreSQL, Spring и Kafka. Полный
+список с тегами, исходниками и разборами — в [docs/CATALOG.md](docs/CATALOG.md).
 
 ---
 
@@ -157,12 +157,16 @@ public static Map<String, Double> calculate(List<Employee> employees) {
 ```bash
 ./gradlew :core-drills:test                     # ежедневный цикл
 ./gradlew build                                 # всё, кроме integration и slow
-./gradlew :integration-drills:integrationTest   # нужен запущенный Docker
+./gradlew :integration-drills:integrationTest   # PostgreSQL, нужен Docker
+./gradlew :spring-drills:integrationTest        # JPA/N+1, нужен Docker
 ./gradlew test --tests '*Streams*'              # точечно
 ```
 
 Обычная сборка **не** требует Docker: тесты с тегами `integration` и `slow`
 исключены по умолчанию. Отдельного флага для этого не нужно.
+
+GitHub Actions запускает два job: быстрый build вместе с regression-тестом CLI,
+затем Docker-job со всеми PostgreSQL/Spring integration-тестами.
 
 ---
 
@@ -192,9 +196,11 @@ bin/train due --limit 15             # сразу открыть очередь 
 на завтра. `last_result_id` не даёт повторно применить уже учтённую попытку, а
 никогда не встречавшиеся задачи всегда считаются подошедшими.
 
-## Следующий этап
+## Верх пирамиды
 
-Фаза 4 добавит верх пирамиды: L4/L5-сценарии с транзакциями, idempotency,
-retry/DLT и outbox, а также CI для быстрых и Docker-проверок.
+Базовая Фаза 4 готова: `SKIP LOCKED`, recursive CTE, exactly-once database
+effect, N+1 с Hibernate Statistics, Kafka retry/DLT, transactional outbox,
+token bucket, executor backpressure и code-review transfer invariants. Дальше
+L4/L5 пополняются по реальным пробелам, а не ради количества.
 
 Порядок работ — в [DESIGN.md](DESIGN.md), §12.

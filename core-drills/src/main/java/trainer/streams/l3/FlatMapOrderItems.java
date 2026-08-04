@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 // @tags streams,flatMap,groupingBy,summingInt
 // @time 25m
 // @src  new
+// @doc  FlatMapOrderItems.md
 public final class FlatMapOrderItems {
 
     private FlatMapOrderItems() {

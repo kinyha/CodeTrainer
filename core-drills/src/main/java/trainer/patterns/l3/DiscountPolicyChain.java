@@ -10,6 +10,7 @@ import java.util.Optional;
 // @tags patterns,chain-of-responsibility,BigDecimal,business-rule
 // @time 25m
 // @src  new
+// @doc  DiscountPolicyChain.md
 public final class DiscountPolicyChain {
 
     private DiscountPolicyChain() {

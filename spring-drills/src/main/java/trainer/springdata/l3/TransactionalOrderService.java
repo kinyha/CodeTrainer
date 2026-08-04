@@ -9,6 +9,7 @@ import java.util.Objects;
 // @tags spring-data,transactional,service,boundary
 // @time 25m
 // @src  new
+// @doc  TransactionalOrderService.md
 @Service
 public final class TransactionalOrderService {
 

@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentMap;
 // @tags patterns,idempotency,ConcurrentHashMap,payment
 // @time 40m
 // @src  new
+// @doc  IdempotentPaymentService.md
 public final class IdempotentPaymentService {
 
     private final PaymentGateway gateway;

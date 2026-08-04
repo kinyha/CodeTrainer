@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 // @tags spring-mvc,bean-validation,request-body,MockMvc
 // @time 25m
 // @src  new
+// @doc  ValidatedCreateCustomer.md
 @RestController
 @RequestMapping("/customers")
 public final class ValidatedCreateCustomer {

@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 // @tags streams,groupingBy,downstream,EnumMap
 // @time 25m
 // @src  new
+// @doc  GroupByTypeAndStatus.md
 public final class GroupByTypeAndStatus {
 
     private GroupByTypeAndStatus() {

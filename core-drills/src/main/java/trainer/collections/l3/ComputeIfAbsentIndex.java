@@ -12,6 +12,7 @@ import java.util.Objects;
 // @tags Map,computeIfAbsent,index,immutable
 // @time 20m
 // @src  new
+// @doc  ComputeIfAbsentIndex.md
 public final class ComputeIfAbsentIndex {
 
     private ComputeIfAbsentIndex() {

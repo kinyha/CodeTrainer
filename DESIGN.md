@@ -776,9 +776,16 @@ CLI сведён в `tools/trainer.py`; два публичных shell-wrapper 
 менее 400 строк, сохраняя ограничение §8. Обновление schedule атомарно, повторный
 запуск идемпотентен, а несколько новых результатов применяются по порядку.
 
-**Фаза 4 — верх пирамиды (по мере надобности).**
+**Фаза 4 — базовый верх пирамиды (готово 2026-08-04; далее по надобности).**
 L4/L5: transaction isolation, idempotency, N+1, retry/DLT, outbox, exactly-once;
 concurrency L5 (threadpool, ratelimiter, broker); SQL L5; code-review drills; CI.
+
+Реализованы 9 сценариев: `sql.l4.SkipLockedJobClaim`,
+`sql.l4.IdempotentBalanceEvent`, `sql.l5.RecursiveCategoryTree`,
+`springdata.l4.NPlusOneFetchJoin`, `springdata.l5.PlaceOrderWithOutbox`,
+`kafka.l4.RetryToDltListener`, два concurrency L5 и code-review transfer.
+PostgreSQL locking/idempotency/CTE и N+1 проверяются реальной БД, retry/DLT —
+Embedded Kafka. GitHub Actions разделяет быстрый build и Docker integration job.
 
 Правило приоритета: **контент важнее тулинга.** Если выбор между «ещё 10 задач» и
 «улучшить скрипт» — сначала задачи. Тулинг Фаз 0–2 покрывает 90 % ежедневного

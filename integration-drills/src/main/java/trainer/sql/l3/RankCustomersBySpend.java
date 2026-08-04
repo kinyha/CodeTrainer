@@ -4,6 +4,7 @@ package trainer.sql.l3;
 // @tags sql,cte,window-function,dense-rank,postgres
 // @time 30m
 // @src  new
+// @doc  RankCustomersBySpend.md
 public final class RankCustomersBySpend {
 
     private RankCustomersBySpend() {

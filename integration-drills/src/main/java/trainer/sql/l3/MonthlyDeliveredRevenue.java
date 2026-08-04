@@ -4,6 +4,7 @@ package trainer.sql.l3;
 // @tags sql,date-trunc,sum,group-by,postgres
 // @time 25m
 // @src  new
+// @doc  MonthlyDeliveredRevenue.md
 public final class MonthlyDeliveredRevenue {
 
     private MonthlyDeliveredRevenue() {

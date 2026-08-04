@@ -4,6 +4,7 @@ package trainer.kotlinlang.l3
 // @tags inline,reified,filterIsInstance,generics
 // @time 18m
 // @src  new
+// @doc  ReifiedEventFilter.md
 object ReifiedEventFilter {
 
     sealed interface Event
