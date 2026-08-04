@@ -1,0 +1,11 @@
+.gradle/
+**/build/
+
+.gittypeignore
+arena/src/
+
+.idea/
+*.iml
+.DS_Store
+
+infra/.env

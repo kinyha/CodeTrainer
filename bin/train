@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+
+usage() {
+    cat <<'EOF'
+Usage: bin/train [--fresh] <topic> [l1|l2|l3|l4|l5]
+
+Examples:
+  bin/train streams
+  bin/train streams l2
+  bin/train --fresh streams l2
+EOF
+}
+
+fresh=false
+args=()
+for arg in "$@"; do
+    case "$arg" in
+        --fresh) fresh=true ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        --*)
+            echo "Unknown option: $arg" >&2
+            usage >&2
+            exit 2
+            ;;
+        *) args+=("$arg") ;;
+    esac
+done
+
+if (( ${#args[@]} < 1 || ${#args[@]} > 2 )); then
+    usage >&2
+    exit 2
+fi
+
+topic=${args[0]}
+level=${args[1]:-}
+
+case "$topic" in
+    algorithms|collections|streams|concurrency|patterns|testing)
+        module=core-drills
+        language=java
+        ;;
+    kotlinlang|coroutines)
+        module=core-drills
+        language=kotlin
+        ;;
+    springcore|springweb|springdata)
+        module=spring-drills
+        language=java
+        ;;
+    sql|kafka)
+        module=integration-drills
+        language=java
+        ;;
+    *)
+        echo "Unknown topic: $topic" >&2
+        exit 2
+        ;;
+esac
+
+if [[ -n "$level" ]]; then
+    [[ "$level" =~ ^l[1-5]$ ]] || {
+        echo "Level must be one of l1, l2, l3, l4, l5" >&2
+        exit 2
+    }
+fi
+
+target="$module/src/main/$language/trainer/$topic"
+[[ -z "$level" ]] || target="$target/$level"
+
+cd "$ROOT_DIR"
+
+if [[ ! -d "$target" ]]; then
+    echo "No exercises yet: $target" >&2
+    exit 1
+fi
+
+if ! command -v gittype >/dev/null 2>&1; then
+    echo "gittype is not installed" >&2
+    exit 127
+fi
+
+rm -f "$ROOT_DIR/.gittypeignore"
+
+if [[ "$fresh" == true ]]; then
+    gittype cache clear
+fi
+
+file_count=$(find "$target" -type f -name "*.$([[ "$language" == java ]] && echo java || echo kt)" | wc -l | tr -d ' ')
+if [[ "$file_count" == 0 ]]; then
+    echo "No $language exercises in $target" >&2
+    exit 1
+fi
+
+echo "Playlist: $topic${level:+/$level} ($file_count file(s), $language)"
+exec gittype "$target" --langs "$language"
