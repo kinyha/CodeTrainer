@@ -9,7 +9,7 @@
 | Потренировать задачу в полном исходнике | `bin/train streams` |
 | Написать решение с нуля и прогнать тесты | `bin/trainer new streams.l2.AvgSalaryByDepartment` |
 
-Полный список всех 108 задач с ID, тегами, исходниками и разборами:
+Полный список всех 122 задач с ID, тегами, исходниками и разборами:
 [docs/CATALOG.md](docs/CATALOG.md).
 
 ## Быстрый старт
@@ -73,11 +73,11 @@ L1–L5 в пути задачи и Easy/Normal/Hard/Zen/Wild в gittype — э�
 | Каталог | Что там | Сколько |
 |---|---|---:|
 | `core-drills/src/main/java/trainer/` | Algorithms, Collections, Streams, Concurrency, Patterns | 83 |
-| `core-drills/src/main/kotlin/trainer/kotlinlang/` | Kotlin language | 6 |
+| `core-drills/src/main/kotlin/trainer/kotlinlang/` | Kotlin language | 20 |
 | `spring-drills/src/main/java/trainer/` | Spring Core, Data, Web | 7 |
 | `integration-drills/src/main/java/trainer/` | SQL/PostgreSQL и Kafka | 12 |
 | `*/src/test/...` | Тесты в том же пакете | — |
-| `docs/CATALOG.md` | Кликабельный каталог всех задач | 108 |
+| `docs/CATALOG.md` | Кликабельный каталог всех задач | 122 |
 
 Внутри каталога путь всегда имеет вид:
 
@@ -103,7 +103,7 @@ core-drills/src/main/java/trainer/streams/l2/AvgSalaryByDepartment.md
 | `algorithms` | L1–L4 | 20 | Массивы/строки, two pointers, sliding window, binary search, стек, связный список, LRU-кэш, графы |
 | `collections` | L1–L4 | 20 | List/Set/Map, Comparator, TreeMap, PriorityQueue, Deque, LinkedHashMap, equals/hashCode |
 | `streams` | L1–L4 | 20 | filter/map, collectors, grouping, `flatMap`, teeing, свой `Collector` |
-| `kotlinlang` | L1–L3 | 6 | Null safety, sequences, sealed, reified |
+| `kotlinlang` | L1–L4 | 20 | Null safety, data class, sequences, sealed, delegates, variance, value class |
 | `concurrency` | L1–L5 | 20 | Thread/join, synchronized, Atomic/CAS, Lock/Condition, wait/notify, backpressure, rate limiter |
 | `patterns` | L3–L4 | 3 | Business rules, idempotency, transfer invariants |
 | `springcore` | L2 | 1 | Constructor injection, service boundary |
