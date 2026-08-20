@@ -9,7 +9,7 @@
 | Потренировать задачу в полном исходнике | `bin/train streams` |
 | Написать решение с нуля и прогнать тесты | `bin/trainer new streams.l2.AvgSalaryByDepartment` |
 
-Полный список всех 155 задач с ID, тегами, исходниками и разборами:
+Полный список всех 164 задач с ID, тегами, исходниками и разборами:
 [docs/CATALOG.md](docs/CATALOG.md).
 
 ## Быстрый старт
@@ -74,10 +74,10 @@ L1–L5 в пути задачи и Easy/Normal/Hard/Zen/Wild в gittype — э�
 |---|---|---:|
 | `core-drills/src/main/java/trainer/` | Algorithms, Collections, Streams, Concurrency, Patterns | 100 |
 | `core-drills/src/main/kotlin/trainer/kotlinlang/` | Kotlin language | 20 |
-| `spring-drills/src/main/java/trainer/` | Spring Core, Data, Web | 21 |
+| `spring-drills/src/main/java/trainer/` | Spring Core, Data, Web | 30 |
 | `integration-drills/src/main/java/trainer/` | SQL/PostgreSQL и Kafka | 14 |
 | `*/src/test/...` | Тесты в том же пакете | — |
-| `docs/CATALOG.md` | Кликабельный каталог всех задач | 155 |
+| `docs/CATALOG.md` | Кликабельный каталог всех задач | 164 |
 
 Внутри каталога путь всегда имеет вид:
 
@@ -106,7 +106,7 @@ core-drills/src/main/java/trainer/streams/l2/AvgSalaryByDepartment.md
 | `kotlinlang` | L1–L4 | 20 | Null safety, data class, sequences, sealed, delegates, variance, value class |
 | `concurrency` | L1–L5 | 20 | Thread/join, synchronized, Atomic/CAS, Lock/Condition, wait/notify, backpressure, rate limiter |
 | `patterns` | L2–L4 | 20 | GoF-паттерны (strategy, decorator, observer, visitor...), business rules, idempotency |
-| `springcore` | L2 | 1 | Constructor injection, service boundary |
+| `springcore` | L1–L4 | 10 | DI, bean scope, profiles, qualifier/primary, lifecycle, events, AOP |
 | `springdata` | L1–L5 | 10 | Repository/projections, JPQL, specification, optimistic lock, N+1, transactional outbox |
 | `springweb` | L1–L4 | 10 | REST controllers, ResponseEntity, validation, ProblemDetail, Pageable, filters |
 | `kafka` | L2–L4 | 4 | Keys, manual ack, tombstone, retry/DLT |
