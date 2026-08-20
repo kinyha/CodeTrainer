@@ -9,7 +9,7 @@
 | Потренировать задачу в полном исходнике | `bin/train streams` |
 | Написать решение с нуля и прогнать тесты | `bin/trainer new streams.l2.AvgSalaryByDepartment` |
 
-Полный список всех 164 задач с ID, тегами, исходниками и разборами:
+Полный список всех 170 задач с ID, тегами, исходниками и разборами:
 [docs/CATALOG.md](docs/CATALOG.md).
 
 ## Быстрый старт
@@ -75,9 +75,9 @@ L1–L5 в пути задачи и Easy/Normal/Hard/Zen/Wild в gittype — э�
 | `core-drills/src/main/java/trainer/` | Algorithms, Collections, Streams, Concurrency, Patterns | 100 |
 | `core-drills/src/main/kotlin/trainer/kotlinlang/` | Kotlin language | 20 |
 | `spring-drills/src/main/java/trainer/` | Spring Core, Data, Web | 30 |
-| `integration-drills/src/main/java/trainer/` | SQL/PostgreSQL и Kafka | 14 |
+| `integration-drills/src/main/java/trainer/` | SQL/PostgreSQL и Kafka | 20 |
 | `*/src/test/...` | Тесты в том же пакете | — |
-| `docs/CATALOG.md` | Кликабельный каталог всех задач | 164 |
+| `docs/CATALOG.md` | Кликабельный каталог всех задач | 170 |
 
 Внутри каталога путь всегда имеет вид:
 
@@ -109,7 +109,7 @@ core-drills/src/main/java/trainer/streams/l2/AvgSalaryByDepartment.md
 | `springcore` | L1–L4 | 10 | DI, bean scope, profiles, qualifier/primary, lifecycle, events, AOP |
 | `springdata` | L1–L5 | 10 | Repository/projections, JPQL, specification, optimistic lock, N+1, transactional outbox |
 | `springweb` | L1–L4 | 10 | REST controllers, ResponseEntity, validation, ProblemDetail, Pageable, filters |
-| `kafka` | L2–L4 | 4 | Keys, manual ack, tombstone, retry/DLT |
+| `kafka` | L1–L4 | 10 | Headers, multi-topic, batch, idempotent consumer, manual ack, tombstone, retry/DLT, transactional producer |
 | `sql` | L1–L5 | 10 | JOIN/GROUP BY, window/CTE, DISTINCT ON, locking, idempotency |
 
 ## Режим `focus`: набирать только решение
