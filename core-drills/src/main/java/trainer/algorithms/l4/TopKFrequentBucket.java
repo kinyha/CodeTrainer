@@ -22,11 +22,11 @@ public final class TopKFrequentBucket {
      */
     public static List<Integer> topK(int[] values, int k) {
         Objects.requireNonNull(values, "values");
+
+        // ---8<--- solution
         if (k <= 0) {
             throw new IllegalArgumentException("k must be positive");
         }
-
-        // ---8<--- solution
         Map<Integer, Integer> frequencyByValue = new HashMap<>();
         for (int value : values) {
             frequencyByValue.merge(value, 1, Integer::sum);

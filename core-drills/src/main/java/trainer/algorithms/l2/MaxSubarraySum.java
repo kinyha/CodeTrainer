@@ -14,11 +14,11 @@ public final class MaxSubarraySum {
     /** Алгоритм Кадане. Массив не может быть пустым — максимума не существует. */
     public static long maxSum(int[] values) {
         Objects.requireNonNull(values, "values");
+
+        // ---8<--- solution
         if (values.length == 0) {
             throw new IllegalArgumentException("values must not be empty");
         }
-
-        // ---8<--- solution
         long best = values[0];
         long current = values[0];
         for (int i = 1; i < values.length; i++) {
