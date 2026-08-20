@@ -39,9 +39,9 @@ public final class PlaceOrderWithOutbox {
     @Transactional
     public Order place(long orderId, long customerId, BigDecimal total) {
         Objects.requireNonNull(total, "total");
-        if (total.signum() <= 0) throw new IllegalArgumentException("total must be positive");
 
         // ---8<--- solution
+        if (total.signum() <= 0) throw new IllegalArgumentException("total must be positive");
         Order order = new Order(orderId, customerId, total, "PLACED");
         orders.save(order);
         OutboxEvent event = new OutboxEvent(
