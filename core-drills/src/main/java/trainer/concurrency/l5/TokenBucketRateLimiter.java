@@ -31,9 +31,8 @@ public final class TokenBucketRateLimiter {
 
     /** Атомарно пополняет bucket по монотонным часам и пытается забрать permits. */
     public synchronized boolean tryAcquire(int permits) {
-        if (permits <= 0 || permits > capacity) throw new IllegalArgumentException("invalid permits");
-
         // ---8<--- solution
+        if (permits <= 0 || permits > capacity) throw new IllegalArgumentException("invalid permits");
         long now = nanoTime.getAsLong();
         long elapsed = Math.max(0, now - lastRefillNanos);
         tokens = Math.min(capacity, tokens + elapsed / NANOS_PER_SECOND * refillPerSecond);
